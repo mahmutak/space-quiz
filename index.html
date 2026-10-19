@@ -177,7 +177,13 @@
         <span class="tiny-star" aria-hidden="true">✦</span>
         <div class="planet-art" aria-hidden="true"><div class="planet"></div><div class="ring"></div><div class="planet planet-front"></div></div>
       </div>
-      <section id="quiz" class="card-body" aria-label="Space quiz">
+      <noscript>
+        <section class="card-body" aria-labelledby="javascript-required">
+          <h2 id="javascript-required">JavaScript is required</h2>
+          <p>This quiz needs JavaScript enabled in your browser. No internet connection is required.</p>
+        </section>
+      </noscript>
+      <section id="quiz" class="card-body" aria-label="Space quiz" hidden>
         <div class="stats">
           <span id="question-count" class="question-count"></span>
           <span class="score"><span class="score-star" aria-hidden="true">★</span> Score: <span id="score">0</span></span>
@@ -206,7 +212,6 @@
     </div>
     <div id="announcement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
     <p class="bottom-note">10 questions <span aria-hidden="true">·</span> No time limit <span aria-hidden="true">·</span> Just a universe to discover</p>
-    <noscript><p>This quiz needs JavaScript enabled in your browser. No internet connection is required.</p></noscript>
   </main>
   <script>
     "use strict";
@@ -415,6 +420,7 @@
       renderQuestion(true);
     });
     renderQuestion();
+    elements.quiz.hidden = false;
   </script>
 </body>
 </html>
