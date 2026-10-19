@@ -307,11 +307,21 @@
       "answers", "feedback", "footer-note", "next", "reaction", "results-title",
       "result-message", "final-score", "percentage", "answer-review", "review-list", "restart", "announcement"
     ].map(id => [id, document.getElementById(id)]));
+    let attemptQuestions = shuffleQuestions();
     let current = 0;
     let score = 0;
     let answered = false;
     let scoreAnimation = null;
     const selections = [];
+
+    function shuffleQuestions() {
+      const shuffled = [...questions];
+      for (let index = shuffled.length - 1; index > 0; index--) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+      }
+      return shuffled;
+    }
 
     function setProgress(value) {
       elements.progress.value = value;
@@ -321,7 +331,7 @@
 
     function renderQuestion(moveFocus = false) {
       answered = false;
-      const item = questions[current];
+      const item = attemptQuestions[current];
       elements["question-count"].replaceChildren();
       const count = document.createElement("strong");
       count.textContent = `Question ${String(current + 1).padStart(2, "0")}`;
@@ -360,7 +370,7 @@
       if (answered) return;
       answered = true;
       selections[current] = index;
-      const item = questions[current];
+      const item = attemptQuestions[current];
       const correct = index === item.correct;
       if (correct) score++;
       elements.score.textContent = score;
@@ -392,7 +402,7 @@
 
     function renderReview() {
       elements["review-list"].replaceChildren();
-      questions.forEach((item, index) => {
+      attemptQuestions.forEach((item, index) => {
         const entry = document.createElement("li");
         const heading = document.createElement("h3");
         heading.textContent = item.question;
@@ -452,6 +462,7 @@
     elements.restart.addEventListener("click", () => {
       cancelAnimationFrame(scoreAnimation);
       scoreAnimation = null;
+      attemptQuestions = shuffleQuestions();
       current = 0;
       score = 0;
       selections.length = 0;
