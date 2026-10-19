@@ -28,7 +28,7 @@
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--ink); min-height: 100vh; }
     button { font: inherit; }
-    button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible {
+    button:focus-visible, a:focus-visible, summary:focus-visible, [tabindex="-1"]:focus-visible {
       outline: 3px solid var(--focus);
       outline-offset: 5px;
     }
@@ -118,6 +118,16 @@
     .result-score { font-size: 60px; font-weight: 800; letter-spacing: -3px; margin: 20px 0 0; }
     .result-score small { font-size: 25px; font-weight: 500; color: var(--muted); letter-spacing: -1px; }
     .result-caption { font-size: 12px; color: var(--muted); margin: 2px 0 28px; }
+    .answer-review { text-align: left; border: 1px solid var(--line); border-radius: 11px; margin-bottom: 24px; }
+    .answer-review summary { padding: 16px; font-size: 14px; font-weight: 650; cursor: pointer; }
+    .review-list { margin: 0; padding: 0 20px 0 42px; overflow-wrap: anywhere; }
+    .review-list li { border-top: 1px solid var(--line); padding: 18px 0; font-size: 13px; line-height: 1.6; }
+    .review-list h3 { font-size: 16px; line-height: 1.4; margin: 0 0 10px; }
+    .review-list p { margin: 6px 0; }
+    .review-outcome { font-weight: 700; }
+    .review-outcome.correct { color: var(--correct); }
+    .review-outcome.wrong { color: var(--wrong); }
+    .review-explanation { color: var(--muted); }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
     @keyframes shake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
     @keyframes pop { 0% { transform: scale(.94); } 60% { transform: scale(1.025); } 100% { transform: scale(1); } }
@@ -201,6 +211,10 @@
         <p id="result-message" class="result-message"></p>
         <p class="result-score"><span id="final-score"></span><small> / 10</small></p>
         <p class="result-caption">correct answers · <span id="percentage"></span>% accuracy</p>
+        <details id="answer-review" class="answer-review">
+          <summary>Review your answers</summary>
+          <ol id="review-list" class="review-list"></ol>
+        </details>
         <button id="restart" class="primary" type="button">Launch another mission <span class="arrow" aria-hidden="true">↗</span></button>
       </section>
     </div>
@@ -286,12 +300,13 @@
     const elements = Object.fromEntries([
       "quiz", "results", "question-count", "score", "progress", "topic", "question",
       "answers", "feedback", "footer-note", "next", "reaction", "results-title",
-      "result-message", "final-score", "percentage", "restart", "announcement"
+      "result-message", "final-score", "percentage", "answer-review", "review-list", "restart", "announcement"
     ].map(id => [id, document.getElementById(id)]));
     let current = 0;
     let score = 0;
     let answered = false;
     let scoreAnimation = null;
+    const selections = [];
 
     function setProgress(value) {
       elements.progress.value = value;
@@ -339,6 +354,7 @@
     function selectAnswer(index) {
       if (answered) return;
       answered = true;
+      selections[current] = index;
       const item = questions[current];
       const correct = index === item.correct;
       if (correct) score++;
@@ -369,7 +385,30 @@
       elements.announcement.textContent = `${title} ${item.explanation} Score: ${score} out of ${current + 1}.`;
     }
 
+    function renderReview() {
+      elements["review-list"].replaceChildren();
+      questions.forEach((item, index) => {
+        const entry = document.createElement("li");
+        const heading = document.createElement("h3");
+        heading.textContent = item.question;
+        const correct = selections[index] === item.correct;
+        const outcome = document.createElement("p");
+        outcome.className = `review-outcome ${correct ? "correct" : "wrong"}`;
+        outcome.textContent = correct ? "Correct" : "Incorrect";
+        const selectedAnswer = document.createElement("p");
+        selectedAnswer.textContent = `Your answer: ${item.answers[selections[index]]}`;
+        const correctAnswer = document.createElement("p");
+        correctAnswer.textContent = `Correct answer: ${item.answers[item.correct]}`;
+        const explanation = document.createElement("p");
+        explanation.className = "review-explanation";
+        explanation.textContent = item.explanation;
+        entry.append(heading, outcome, selectedAnswer, correctAnswer, explanation);
+        elements["review-list"].append(entry);
+      });
+    }
+
     function showResults() {
+      renderReview();
       elements.quiz.hidden = true;
       elements.results.hidden = false;
       const result = score === 10
@@ -410,6 +449,9 @@
       scoreAnimation = null;
       current = 0;
       score = 0;
+      selections.length = 0;
+      elements["answer-review"].open = false;
+      elements["review-list"].replaceChildren();
       elements.results.hidden = true;
       elements.quiz.hidden = false;
       renderQuestion(true);
