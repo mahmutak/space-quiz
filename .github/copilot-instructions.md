@@ -18,7 +18,7 @@ For answer-review changes, expand/collapse the results review with Enter and Spa
 
 `index.html` contains theme/layout CSS, a persistent HTML shell, and a strict-mode classic script. The script renders answer buttons into the shell; `#quiz` and `#results` alternate visibility using `hidden`.
 
-The `questions` array is the content source: each entry has `topic`, `question`, four `answers`, a zero-based `correct` index, and an `explanation`. Questions run in fixed order. The quiz has ten questions; several HTML labels, the progress maximum, results denominator, and reaction thresholds also encode that count. Keep them consistent if the count changes.
+The `questions` array is the content source: each entry has `topic`, `question`, four `answers`, a zero-based `correct` index, and an `explanation`. `attemptQuestions` is a Fisher-Yates shuffled copy created on initial load and each restart; its order stays fixed throughout the attempt and is also used for the answer review. Answer option order and the source array stay unchanged. A shuffle may legitimately repeat an earlier order. The quiz has ten questions; several HTML labels, the progress maximum, results denominator, and reaction thresholds also encode that count. Keep them consistent if the count changes.
 
 The `elements` object caches DOM nodes by ID. Keep its ID list aligned with markup changes. Runtime state consists of `current` (zero-based question index), `score`, `answered`, and `scoreAnimation` (the pending animation-frame handle).
 
